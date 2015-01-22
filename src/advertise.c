@@ -27,179 +27,166 @@
 
 #include "tintin.h"
 
-struct advertisement_type
-{
-	time_t                  start;
-	time_t                  end;
-	int                     value;
-	char                  * desc;
+struct advertisement_type {
+    time_t                  start;
+    time_t                  end;
+    int                     value;
+    char                  * desc;
 };
 
-struct advertisement_type advertisement_table[] =
-{
-	{
-		1388166000, /* 2013 */
-		1500000000, /* 2017 */
-		100,
-		"\n"
-		"<138>                     Lost Souls  -  http://lostsouls.org\n"
-		"\n"
-		"<078>\"Our world is fallen, boy.  Aedaris is a ruin.  My grandfather, he told me\n"
-		"<078>of days, not so long gone, when everything you see was part of a great empire.\n"
-		"<078>Peaceful, he said.  Full of wonders.  They called it eternal.  Funny, eh, boy?\n"
-		"<078>They thought it'd last forever, and it went crazy and tore itself apart.  But\n"
-		"<078>they left behind a few things for us, didn't they?  Ha!  Yes, lots for us.  Now\n"
-		"<078>give that wizard-stick here before you blow your fool horns off, and get to\n"
-		"<078>work.  Daylight's soon, and these faeries aren't going to skin themselves.\"\n"
-		"<078>Lost Souls: chaos in the wreckage of empire.  Be clever if you want to live.\n"
-		"\n"
-                "<178>To connect to Lost Souls enter: #session ls lostsouls.org 23\n"
-                "\n"
-	},
+struct advertisement_type advertisement_table[] = {
+    {
+        1388166000, /* 2013 */
+        1500000000, /* 2017 */
+        100,
+        "\n"
+        "<138>                     Lost Souls  -  http://lostsouls.org\n"
+        "\n"
+        "<078>\"Our world is fallen, boy.  Aedaris is a ruin.  My grandfather, he told me\n"
+        "<078>of days, not so long gone, when everything you see was part of a great empire.\n"
+        "<078>Peaceful, he said.  Full of wonders.  They called it eternal.  Funny, eh, boy?\n"
+        "<078>They thought it'd last forever, and it went crazy and tore itself apart.  But\n"
+        "<078>they left behind a few things for us, didn't they?  Ha!  Yes, lots for us.  Now\n"
+        "<078>give that wizard-stick here before you blow your fool horns off, and get to\n"
+        "<078>work.  Daylight's soon, and these faeries aren't going to skin themselves.\"\n"
+        "<078>Lost Souls: chaos in the wreckage of empire.  Be clever if you want to live.\n"
+        "\n"
+        "<178>To connect to Lost Souls enter: #session ls lostsouls.org 23\n"
+        "\n"
+    },
 
-	{
-		1388166000, /* 2013 */
-		1500000000, /* 2017 */
-		100,
-		"\n"
-		"<138>               Carrion Fields  -  http://carrionfields.net\n"
-		"\n"
-		"<078>Adventure, politics and bloody war await you in this life of swords, sorcery,\n"
-		"<078>deception, and honor.  We have 17 customizable classes with which to explore a\n"
-		"<078>massively rich world of over 270 areas.  RP is mandatory, but help is always\n"
-		"<078>available on the newbie channel.  Intuitive game mechanics provide a fun and\n"
-		"<078>fulfilling PK environment.  Carrion Fields is 100% free to play and free of\n"
-		"<078>paid perks as well.  By what name do you wish to be mourned?\n"
-		"\n"
-                "<178>To connect to Carrion Fields enter: #session cf carrionfields.net 4449\n"
-                "\n"
-		                
-	},
+    {
+        1388166000, /* 2013 */
+        1500000000, /* 2017 */
+        100,
+        "\n"
+        "<138>               Carrion Fields  -  http://carrionfields.net\n"
+        "\n"
+        "<078>Adventure, politics and bloody war await you in this life of swords, sorcery,\n"
+        "<078>deception, and honor.  We have 17 customizable classes with which to explore a\n"
+        "<078>massively rich world of over 270 areas.  RP is mandatory, but help is always\n"
+        "<078>available on the newbie channel.  Intuitive game mechanics provide a fun and\n"
+        "<078>fulfilling PK environment.  Carrion Fields is 100% free to play and free of\n"
+        "<078>paid perks as well.  By what name do you wish to be mourned?\n"
+        "\n"
+        "<178>To connect to Carrion Fields enter: #session cf carrionfields.net 4449\n"
+        "\n"
 
-	{
-		1388166000, /* 2013 */
-		1500000000, /* 2017 */
-		100,
-		"\n"
-		"<138>                   Alter Aeon  -  http://www.alteraeon.com\n"
-		"\n"
-		"<078>Alter Aeon is a custom multiclass MUD, where each of the six character\n"
-		"<078>classes can be combined to make very unique characters.  This huge\n"
-		"<078>fantasy themed game has hundreds of areas and quests, spanning\n"
-		"<078>several continents and outer planar regions.  There are custom spells,\n"
-		"<078>skills, minions, player run shops, boats, PvP, and many other features\n"
-		"<078>for nearly every kind of player.  The game is very friendly to new players\n"
-		"<078>and has extensive support for the blind and visually impaired.\n"
-		"\n"
-		"<178>To connect to Alter Aeon enter: #session aa alteraeon.com 3000\n"
-		"\n"
-	},
+    },
 
-	{
-		1388166000, /* 2013 */
-		1500000000, /* 2017 */
-		100,
-		"\n"
-		"<138>                Threshold RPG  -  http://www.thresholdrpg.com\n"
-		"\n"
-		"<078>Join us as Threshold RPG, one of the oldest RP enforced games on the\n"
-		"<078>internet. Add to thirteen years of player created history and make your own\n"
-		"<078>mark on the world today. Join a hundred other players who are vying for\n"
-		"<078>political and religious power in complex systems that reward skill, effort,\n"
-		"<078>and social interactions. Threshold RPG is a custom code-base written in\n"
-		"<078>LPC and features a completely unique and original world.\n"
-		"\n"
-		"<178>To connect to Threshold RPG enter: #session thresh thresholdrpg.com 23\n"
-		"\n"
-	},
+    {
+        1388166000, /* 2013 */
+        1500000000, /* 2017 */
+        100,
+        "\n"
+        "<138>                   Alter Aeon  -  http://www.alteraeon.com\n"
+        "\n"
+        "<078>Alter Aeon is a custom multiclass MUD, where each of the six character\n"
+        "<078>classes can be combined to make very unique characters.  This huge\n"
+        "<078>fantasy themed game has hundreds of areas and quests, spanning\n"
+        "<078>several continents and outer planar regions.  There are custom spells,\n"
+        "<078>skills, minions, player run shops, boats, PvP, and many other features\n"
+        "<078>for nearly every kind of player.  The game is very friendly to new players\n"
+        "<078>and has extensive support for the blind and visually impaired.\n"
+        "\n"
+        "<178>To connect to Alter Aeon enter: #session aa alteraeon.com 3000\n"
+        "\n"
+    },
 
-	{
-		0,
-		0,
-		0,
-		""
-	}
+    {
+        1388166000, /* 2013 */
+        1500000000, /* 2017 */
+        100,
+        "\n"
+        "<138>                Threshold RPG  -  http://www.thresholdrpg.com\n"
+        "\n"
+        "<078>Join us as Threshold RPG, one of the oldest RP enforced games on the\n"
+        "<078>internet. Add to thirteen years of player created history and make your own\n"
+        "<078>mark on the world today. Join a hundred other players who are vying for\n"
+        "<078>political and religious power in complex systems that reward skill, effort,\n"
+        "<078>and social interactions. Threshold RPG is a custom code-base written in\n"
+        "<078>LPC and features a completely unique and original world.\n"
+        "\n"
+        "<178>To connect to Threshold RPG enter: #session thresh thresholdrpg.com 23\n"
+        "\n"
+    },
+
+    {
+        0,
+        0,
+        0,
+        ""
+    }
 };
 
-int valid_advertisement(int i)
-{
-	time_t current_time = time(NULL);
+int valid_advertisement(int i) {
+    time_t current_time = time(NULL);
 
-	if (advertisement_table[i].start > current_time)
-	{
-		return 0;
-	}
-	if (advertisement_table[i].end < current_time)
-	{
-		return 0;
-	}
-	return advertisement_table[i].value;
+    if (advertisement_table[i].start > current_time) {
+        return 0;
+    }
+    if (advertisement_table[i].end < current_time) {
+        return 0;
+    }
+    return advertisement_table[i].value;
 }
 
-int total_advertisements()
-{
-	int i, count = 0;
+int total_advertisements() {
+    int i, count = 0;
 
-	for (i = 0 ; *advertisement_table[i].desc ; i++)
-	{
-		count += valid_advertisement(i);
-	}
-	return count;
+    for (i = 0 ; *advertisement_table[i].desc ; i++) {
+        count += valid_advertisement(i);
+    }
+    return count;
 }
 
-DO_COMMAND(do_advertise)
-{
-	int i, max, cnt;
-	char buf[BUFFER_SIZE];
+DO_COMMAND(do_advertise) {
+    int i, max, cnt;
+    char buf[BUFFER_SIZE];
 
-	max = total_advertisements();
+    max = total_advertisements();
 
-	for (i = 0 ; *advertisement_table[i].desc ; i++)
-	{
-		if (!valid_advertisement(i))
-		{
-			continue;
-		}
+    for (i = 0 ; *advertisement_table[i].desc ; i++) {
+        if (!valid_advertisement(i)) {
+            continue;
+        }
 
-		cnt = advertisement_table[i].value;
+        cnt = advertisement_table[i].value;
 
-		if (rand() % max < cnt)
-		{
-			char *pto, *ptf;
+        if (rand() % max < cnt) {
+            char *pto, *ptf;
 
-			substitute(ses, advertisement_table[i].desc, buf, SUB_COL);
+            substitute(ses, advertisement_table[i].desc, buf, SUB_COL);
 
-			pto = buf;
+            pto = buf;
 
-			while (*pto)
-			{
-				ptf = strchr(pto, '\n');
+            while (*pto) {
+                ptf = strchr(pto, '\n');
 
-				if (ptf == NULL)
-				{
-					break;
-				}
-				*ptf++ = 0;
+                if (ptf == NULL) {
+                    break;
+                }
+                *ptf++ = 0;
 
-				tintin_puts(ses, pto);
+                tintin_puts(ses, pto);
 
-				pto = ptf;
-			}
-			break;
-		}
-		max -= cnt;
-	}
+                pto = ptf;
+            }
+            break;
+        }
+        max -= cnt;
+    }
 
 //	tintin_printf2(ses, "#NO SESSION ACTIVE. USE: %csession {name} {host} {port} TO START ONE.", gtd->tintin_char);
 
-	return ses;
+    return ses;
 }
 
 /*
 
 	{
-		1354280000,  30 Nov 2012 
-		1420072000,  31 Dec 2014 
+		1354280000,  30 Nov 2012
+		1420072000,  31 Dec 2014
 		100,
 		"\n"
 		"<138>                New Worlds Ateraan  -  http://www.ateraan.com\n"
@@ -215,7 +202,7 @@ DO_COMMAND(do_advertise)
 		"\n"
                 "<178>To connect to New Worlds Ateraan enter: #session nwa ateraan.com 4002\n"
                 "\n"
-		                
+
 	},
 
 */
@@ -275,7 +262,7 @@ DO_COMMAND(do_advertise)
 		"\n"
                 "<178>To connect to Lost Souls enter: #session ls lostsouls.org 23\n"
                 "\n"
-		                
+
 	},
 
 	{

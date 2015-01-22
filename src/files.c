@@ -33,439 +33,383 @@
 	read and execute a command file, supports multi lines - Igor
 */
 
-DO_COMMAND(do_read)
-{
-	FILE *fp;
-	struct stat filedata;
-	char *bufi, *bufo, filename[BUFFER_SIZE], temp[BUFFER_SIZE], *pti, *pto, last = 0;
-	int lvl, cnt, com, lnc, fix, ok;
-	int counter[LIST_MAX];
+DO_COMMAND(do_read) {
+    FILE *fp;
+    struct stat filedata;
+    char *bufi, *bufo, filename[BUFFER_SIZE], temp[BUFFER_SIZE], *pti, *pto, last = 0;
+    int lvl, cnt, com, lnc, fix, ok;
+    int counter[LIST_MAX];
 
-	get_arg_in_braces(ses, arg, filename, TRUE);
-	substitute(ses, filename, filename, SUB_VAR|SUB_FUN);
+    get_arg_in_braces(ses, arg, filename, TRUE);
+    substitute(ses, filename, filename, SUB_VAR|SUB_FUN);
 
-	if ((fp = fopen(filename, "r")) == NULL)
-	{
-		tintin_printf(ses, "#READ {%s} - FILE NOT FOUND.", filename);
-		return ses;
-	}
+    if ((fp = fopen(filename, "r")) == NULL) {
+        tintin_printf(ses, "#READ {%s} - FILE NOT FOUND.", filename);
+        return ses;
+    }
 
-	temp[0] = getc(fp);
+    temp[0] = getc(fp);
 
-	if (!isgraph((int) temp[0]) || isalpha((int) temp[0]))
-	{
-		tintin_printf(ses, "#ERROR: #READ {%s} - INVALID START OF FILE.", filename);
+    if (!isgraph((int) temp[0]) || isalpha((int) temp[0])) {
+        tintin_printf(ses, "#ERROR: #READ {%s} - INVALID START OF FILE.", filename);
 
-		fclose(fp);
+        fclose(fp);
 
-		return ses;
-	}
+        return ses;
+    }
 
-	ungetc(temp[0], fp);
+    ungetc(temp[0], fp);
 
-	for (cnt = 0 ; cnt < LIST_MAX ; cnt++)
-	{
-		if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ))
-		{
-			counter[cnt] = ses->list[cnt]->used;
-		}
-	}
+    for (cnt = 0 ; cnt < LIST_MAX ; cnt++) {
+        if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ)) {
+            counter[cnt] = ses->list[cnt]->used;
+        }
+    }
 
-	stat(filename, &filedata);
+    stat(filename, &filedata);
 
-	if ((bufi = (char *) calloc(1, filedata.st_size + 2)) == NULL || (bufo = (char *) calloc(1, filedata.st_size + 2)) == NULL)
-	{
-		tintin_printf(ses, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY.", filename);
+    if ((bufi = (char *) calloc(1, filedata.st_size + 2)) == NULL || (bufo = (char *) calloc(1, filedata.st_size + 2)) == NULL) {
+        tintin_printf(ses, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY.", filename);
 
-		fclose(fp);
+        fclose(fp);
 
-		return ses;
-	}
+        return ses;
+    }
 
-	fread(bufi, 1, filedata.st_size, fp);
+    fread(bufi, 1, filedata.st_size, fp);
 
-	pti = bufi;
-	pto = bufo;
+    pti = bufi;
+    pto = bufo;
 
-	lvl = com = lnc = fix = ok = 0;
+    lvl = com = lnc = fix = ok = 0;
 
-	while (*pti)
-	{
-		if (com == 0)
-		{
-			if (HAS_BIT(ses->flags, SES_FLAG_BIG5) && *pti & 128 && pti[1] != 0)
-			{
-				*pto++ = *pti++;
-				*pto++ = *pti++;
-				continue;
-			}
+    while (*pti) {
+        if (com == 0) {
+            if (HAS_BIT(ses->flags, SES_FLAG_BIG5) && *pti & 128 && pti[1] != 0) {
+                *pto++ = *pti++;
+                *pto++ = *pti++;
+                continue;
+            }
 
-			switch (*pti)
-			{
-				case DEFAULT_OPEN:
-					*pto++ = *pti++;
-					lvl++;
-					last = DEFAULT_OPEN;
-					break;
+            switch (*pti) {
+            case DEFAULT_OPEN:
+                *pto++ = *pti++;
+                lvl++;
+                last = DEFAULT_OPEN;
+                break;
 
-				case DEFAULT_CLOSE:
-					*pto++ = *pti++;
-					lvl--;
-					last = DEFAULT_CLOSE;
-					break;
+            case DEFAULT_CLOSE:
+                *pto++ = *pti++;
+                lvl--;
+                last = DEFAULT_CLOSE;
+                break;
 
-				case COMMAND_SEPARATOR:
-					*pto++ = *pti++;
-					last = COMMAND_SEPARATOR;
-					break;
+            case COMMAND_SEPARATOR:
+                *pto++ = *pti++;
+                last = COMMAND_SEPARATOR;
+                break;
 
-				case ' ':
-					*pto++ = *pti++;
-					break;
+            case ' ':
+                *pto++ = *pti++;
+                break;
 
-				case '/':
-					if (lvl == 0 && pti[1] == '*')
-					{
-						pti += 2;
-						com += 1;
-					}
-					else
-					{
-						*pto++ = *pti++;
-					}
-					break;
+            case '/':
+                if (lvl == 0 && pti[1] == '*') {
+                    pti += 2;
+                    com += 1;
+                } else {
+                    *pto++ = *pti++;
+                }
+                break;
 
-				case '\t':
-					*pto++ = *pti++;
-					break;
+            case '\t':
+                *pto++ = *pti++;
+                break;
 
-				case '\r':
-					pti++;
-					break;
+            case '\r':
+                pti++;
+                break;
 
-				case '\n':
-					lnc++;
+            case '\n':
+                lnc++;
 
-					pto--;
+                pto--;
 
-					while (isspace((int) *pto))
-					{
-						pto--;
-					}
+                while (isspace((int) *pto)) {
+                    pto--;
+                }
 
-					pto++;
+                pto++;
 
-					if (fix == 0 && pti[1] == gtd->tintin_char)
-					{
-						if (lvl == 0)
-						{
-							ok = lnc + 1;
-						}
-						else
-						{
-							fix = lnc;
-						}
-					}
+                if (fix == 0 && pti[1] == gtd->tintin_char) {
+                    if (lvl == 0) {
+                        ok = lnc + 1;
+                    } else {
+                        fix = lnc;
+                    }
+                }
 
-					if (lvl)
-					{
-						pti++;
+                if (lvl) {
+                    pti++;
 
-						while (isspace((int) *pti))
-						{
-							if (*pti == '\n')
-							{
-								lnc++;
+                    while (isspace((int) *pti)) {
+                        if (*pti == '\n') {
+                            lnc++;
 
-								if (fix == 0 && pti[1] == gtd->tintin_char)
-								{
-									fix = lnc;
-								}
-							}
-							pti++;
+                            if (fix == 0 && pti[1] == gtd->tintin_char) {
+                                fix = lnc;
+                            }
+                        }
+                        pti++;
 
-						}
+                    }
 
-						if (*pti != DEFAULT_CLOSE && last == 0)
-						{
-							*pto++ = ' ';
-						}
-					}
-					else for (cnt = 1 ; ; cnt++)
-					{
-						if (pti[cnt] == 0)
-						{
-							*pto++ = *pti++;
-							break;
-						}
+                    if (*pti != DEFAULT_CLOSE && last == 0) {
+                        *pto++ = ' ';
+                    }
+                } else for (cnt = 1 ; ; cnt++) {
+                        if (pti[cnt] == 0) {
+                            *pto++ = *pti++;
+                            break;
+                        }
 
-						if (pti[cnt] == DEFAULT_OPEN)
-						{
-							pti++;
-							while (isspace((int) *pti))
-							{
-								pti++;
-							}
-							*pto++ = ' ';
-							break;
-						}
+                        if (pti[cnt] == DEFAULT_OPEN) {
+                            pti++;
+                            while (isspace((int) *pti)) {
+                                pti++;
+                            }
+                            *pto++ = ' ';
+                            break;
+                        }
 
-						if (!isspace((int) pti[cnt]))
-						{
-							*pto++ = *pti++;
-							break;
-						}
-					}
-					break;
+                        if (!isspace((int) pti[cnt])) {
+                            *pto++ = *pti++;
+                            break;
+                        }
+                    }
+                break;
 
-				default:
-					*pto++ = *pti++;
-					last = 0;
-					break;
-			}
-		}
-		else
-		{
-			switch (*pti)
-			{
-				case '/':
-					if (pti[1] == '*')
-					{
-						pti += 2;
-						com += 1;
-					}
-					else
-					{
-						pti += 1;
-					}
-					break;
+            default:
+                *pto++ = *pti++;
+                last = 0;
+                break;
+            }
+        } else {
+            switch (*pti) {
+            case '/':
+                if (pti[1] == '*') {
+                    pti += 2;
+                    com += 1;
+                } else {
+                    pti += 1;
+                }
+                break;
 
-				case '*':
-					if (pti[1] == '/')
-					{
-						pti += 2;
-						com -= 1;
-					}
-					else
-					{
-						pti += 1;
-					}
-					break;
+            case '*':
+                if (pti[1] == '/') {
+                    pti += 2;
+                    com -= 1;
+                } else {
+                    pti += 1;
+                }
+                break;
 
-				case '\n':
-					lnc++;
-					pti++;
-					break;
+            case '\n':
+                lnc++;
+                pti++;
+                break;
 
-				default:
-					pti++;
-					break;
-			}
-		}
-	}
-	*pto++ = '\n';
-	*pto   = '\0';
+            default:
+                pti++;
+                break;
+            }
+        }
+    }
+    *pto++ = '\n';
+    *pto   = '\0';
 
-	if (lvl)
-	{
-		tintin_printf(ses, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d.", filename, abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE, fix == 0 ? 1 : ok, fix == 0 ? lnc + 1 : fix);
+    if (lvl) {
+        tintin_printf(ses, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d.", filename, abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE, fix == 0 ? 1 : ok, fix == 0 ? lnc + 1 : fix);
 
-		fclose(fp);
+        fclose(fp);
 
-		free(bufi);
-		free(bufo);
+        free(bufi);
+        free(bufo);
 
-		return ses;
-	}
+        return ses;
+    }
 
-	if (com)
-	{
-		tintin_printf(ses, "#ERROR: #READ {%s} - MISSING %d '%s'", filename, abs(com), com < 0 ? "/*" : "*/");
+    if (com) {
+        tintin_printf(ses, "#ERROR: #READ {%s} - MISSING %d '%s'", filename, abs(com), com < 0 ? "/*" : "*/");
 
-		fclose(fp);
+        fclose(fp);
 
-		free(bufi);
-		free(bufo);
+        free(bufi);
+        free(bufo);
 
-		return ses;
-	}
+        return ses;
+    }
 
-	sprintf(temp, "{TINTIN CHAR} {%c}", bufo[0]);
+    sprintf(temp, "{TINTIN CHAR} {%c}", bufo[0]);
 
-	gtd->quiet++;
+    gtd->quiet++;
 
-	do_configure(ses, temp);
+    do_configure(ses, temp);
 
-	lvl = 0;
-	pti = bufo;
-	pto = bufi;
+    lvl = 0;
+    pti = bufo;
+    pto = bufi;
 
-	while (*pti)
-	{
-		if (*pti != '\n')
-		{
-			*pto++ = *pti++;
-			continue;
-		}
-		*pto = 0;
+    while (*pti) {
+        if (*pti != '\n') {
+            *pto++ = *pti++;
+            continue;
+        }
+        *pto = 0;
 
-		if (strlen(bufi) >= BUFFER_SIZE)
-		{
-/*			gtd->quiet--;
+        if (strlen(bufi) >= BUFFER_SIZE) {
+            /*			gtd->quiet--;
 
-			bufi[20] = 0;
-*/
+            			bufi[20] = 0;
+            */
 //			tintin_printf(ses, "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %.20s.", filename, bufi);
-			tintin_printf(ses, "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND:", filename);
-/*
-			fclose(fp);
+            tintin_printf(ses, "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND:", filename);
+            /*
+            			fclose(fp);
 
-			free(bufi);
-			free(bufo);
+            			free(bufi);
+            			free(bufo);
 
-			return ses;
-*/		}
+            			return ses;
+            */
+        }
 
-		if (bufi[0])
-		{
-			ses = script_driver(ses, LIST_COMMAND, bufi);
-		}
-		pto = bufi;
-		pti++;
-	}
+        if (bufi[0]) {
+            ses = script_driver(ses, LIST_COMMAND, bufi);
+        }
+        pto = bufi;
+        pti++;
+    }
 
-	gtd->quiet--;
+    gtd->quiet--;
 
-	if (!HAS_BIT(ses->flags, SES_FLAG_VERBOSE))
-	{
-		for (cnt = 0 ; cnt < LIST_MAX ; cnt++)
-		{
-			if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ))
-			{
-				switch (ses->list[cnt]->used - counter[cnt])
-				{
-					case 0:
-						break;
+    if (!HAS_BIT(ses->flags, SES_FLAG_VERBOSE)) {
+        for (cnt = 0 ; cnt < LIST_MAX ; cnt++) {
+            if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ)) {
+                switch (ses->list[cnt]->used - counter[cnt]) {
+                case 0:
+                    break;
 
-					case 1:
-						show_message(ses, cnt, "#OK: %3d %s LOADED.", ses->list[cnt]->used - counter[cnt], list_table[cnt].name);
-						break;
+                case 1:
+                    show_message(ses, cnt, "#OK: %3d %s LOADED.", ses->list[cnt]->used - counter[cnt], list_table[cnt].name);
+                    break;
 
-					default:
-						show_message(ses, cnt, "#OK: %3d %s LOADED.", ses->list[cnt]->used - counter[cnt], list_table[cnt].name_multi);
-						break;
-				}
-			}
-		}
-	}
-	fclose(fp);
+                default:
+                    show_message(ses, cnt, "#OK: %3d %s LOADED.", ses->list[cnt]->used - counter[cnt], list_table[cnt].name_multi);
+                    break;
+                }
+            }
+        }
+    }
+    fclose(fp);
 
-	free(bufi);
-	free(bufo);
+    free(bufi);
+    free(bufo);
 
-	return ses;
+    return ses;
 }
 
 
-DO_COMMAND(do_write)
-{
-	FILE *file;
-	char filename[BUFFER_SIZE];
-	struct listroot *root;
-	int i, j, cnt = 0;
+DO_COMMAND(do_write) {
+    FILE *file;
+    char filename[BUFFER_SIZE];
+    struct listroot *root;
+    int i, j, cnt = 0;
 
-	get_arg_in_braces(ses, arg, filename, TRUE);
+    get_arg_in_braces(ses, arg, filename, TRUE);
 
-	if (*filename == 0 || (file = fopen(filename, "w")) == NULL)
-	{
-		tintin_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE.", filename);
-		return ses;
-	}
+    if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
+        tintin_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE.", filename);
+        return ses;
+    }
 
-	for (i = 0 ; i < LIST_MAX ; i++)
-	{
-		root = ses->list[i];
+    for (i = 0 ; i < LIST_MAX ; i++) {
+        root = ses->list[i];
 
-		if (!HAS_BIT(root->flags, LIST_FLAG_WRITE))
-		{
-			continue;
-		}
+        if (!HAS_BIT(root->flags, LIST_FLAG_WRITE)) {
+            continue;
+        }
 
-		for (j = 0 ; j < root->used ; j++)
-		{
-			if (*root->list[j]->group == 0)
-			{
-				write_node(ses, i, root->list[j], file);
+        for (j = 0 ; j < root->used ; j++) {
+            if (*root->list[j]->group == 0) {
+                write_node(ses, i, root->list[j], file);
 
-				cnt++;
-			}
-		}
-	}
+                cnt++;
+            }
+        }
+    }
 
-	fclose(file);
+    fclose(file);
 
-	show_message(ses, LIST_COMMAND, "#WRITE: %d COMMANDS WRITTEN TO {%s}.", cnt, filename);
+    show_message(ses, LIST_COMMAND, "#WRITE: %d COMMANDS WRITTEN TO {%s}.", cnt, filename);
 
-	return ses;
+    return ses;
 }
 
 
-void write_node(struct session *ses, int list, struct listnode *node, FILE *file)
-{
-	char *result, *str;
+void write_node(struct session *ses, int list, struct listnode *node, FILE *file) {
+    char *result, *str;
 
-	int llen = UMAX(20, strlen(node->left));
-	int rlen = UMAX(25, strlen(node->right));
+    int llen = UMAX(20, strlen(node->left));
+    int rlen = UMAX(25, strlen(node->right));
 
-	push_call("write_node(%d,%p,%p)",list,node,file);
+    push_call("write_node(%d,%p,%p)",list,node,file);
 
-	switch (list)
-	{
-		case LIST_EVENT:
-		case LIST_FUNCTION:
-		case LIST_MACRO:
-			asprintf(&result, "%c%s {%s}\n{\n%s\n}\n\n", gtd->tintin_char, list_table[list].name, node->left, script_writer(ses, node->right));
-			break;
+    switch (list) {
+    case LIST_EVENT:
+    case LIST_FUNCTION:
+    case LIST_MACRO:
+        asprintf(&result, "%c%s {%s}\n{\n%s\n}\n\n", gtd->tintin_char, list_table[list].name, node->left, script_writer(ses, node->right));
+        break;
 
-		case LIST_ACTION:
-		case LIST_ALIAS:
-			asprintf(&result, "%c%s {%s}\n{\n%s\n}\n{%s}\n\n", gtd->tintin_char, list_table[list].name, node->left, script_writer(ses, node->right), node->pr);
-			break;
+    case LIST_ACTION:
+    case LIST_ALIAS:
+        asprintf(&result, "%c%s {%s}\n{\n%s\n}\n{%s}\n\n", gtd->tintin_char, list_table[list].name, node->left, script_writer(ses, node->right), node->pr);
+        break;
 
-		case LIST_VARIABLE:
-			str = str_dup("");
+    case LIST_VARIABLE:
+        str = str_dup("");
 
-			show_nest_node(node, &str, 1);
+        show_nest_node(node, &str, 1);
 
-			asprintf(&result, "%c%-16s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", str);
+        asprintf(&result, "%c%-16s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", str);
 
-			str_free(str);
+        str_free(str);
 
-			break;
+        break;
 
-		default:
-			switch (list_table[list].args)
-			{
-				case 0:
-					result = strdup("");
-					break;
-				case 1:
-					asprintf(&result, "%c%-16s {%s}\n", gtd->tintin_char, list_table[list].name, node->left);
-					break;
-				case 2:
-					asprintf(&result, "%c%-16s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", node->right);
-					break;
-				case 3:
-					asprintf(&result, "%c%-16s {%s} %*s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", node->right, 25 - rlen, "", node->pr);
-					break;
-			}
-			break;
-	}
-	fputs(result, file);
+    default:
+        switch (list_table[list].args) {
+        case 0:
+            result = strdup("");
+            break;
+        case 1:
+            asprintf(&result, "%c%-16s {%s}\n", gtd->tintin_char, list_table[list].name, node->left);
+            break;
+        case 2:
+            asprintf(&result, "%c%-16s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", node->right);
+            break;
+        case 3:
+            asprintf(&result, "%c%-16s {%s} %*s {%s} %*s {%s}\n", gtd->tintin_char, list_table[list].name, node->left, 20 - llen, "", node->right, 25 - rlen, "", node->pr);
+            break;
+        }
+        break;
+    }
+    fputs(result, file);
 
-	free(result);
+    free(result);
 
-	pop_call();
-	return;
+    pop_call();
+    return;
 }
 

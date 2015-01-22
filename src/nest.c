@@ -14,7 +14,7 @@
 *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             *
 *   GNU General Public License for more details.                              *
 *                                                                             *
-*   You should have received a copy of the GNU General Public License         * 
+*   You should have received a copy of the GNU General Public License         *
 *   along with this program; if not, write to the Free Software               *
 *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA *
 *******************************************************************************/
@@ -27,459 +27,377 @@
 
 #include "tintin.h"
 
-struct listroot *search_nest_root(struct listroot *root, char *arg)
-{
-	struct listnode *node;
+struct listroot *search_nest_root(struct listroot *root, char *arg) {
+    struct listnode *node;
 
-	node = search_node_list(root, arg);
+    node = search_node_list(root, arg);
 
-	if (node == NULL || node->root == NULL)
-	{
-		return NULL;
-	}
-	return node->root;
+    if (node == NULL || node->root == NULL) {
+        return NULL;
+    }
+    return node->root;
 }
 
-struct listnode *search_base_node(struct listroot *root, char *variable)
-{
-	char name[BUFFER_SIZE];
+struct listnode *search_base_node(struct listroot *root, char *variable) {
+    char name[BUFFER_SIZE];
 
-	get_arg_to_brackets(root->ses, variable, name);
+    get_arg_to_brackets(root->ses, variable, name);
 
-	return search_node_list(root, name);
+    return search_node_list(root, name);
 }
 
-struct listnode *search_nest_node(struct listroot *root, char *variable)
-{
-	char name[BUFFER_SIZE], *arg;
+struct listnode *search_nest_node(struct listroot *root, char *variable) {
+    char name[BUFFER_SIZE], *arg;
 
-	arg = get_arg_to_brackets(root->ses, variable, name);
+    arg = get_arg_to_brackets(root->ses, variable, name);
 
-	while (root && *arg)
-	{
-		root = search_nest_root(root, name);
+    while (root && *arg) {
+        root = search_nest_root(root, name);
 
-		if (root)
-		{
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-	if (root)
-	{
-		return search_node_list(root, name);
-	}
+    if (root) {
+        return search_node_list(root, name);
+    }
 
-	return NULL;
+    return NULL;
 }
 
-int search_nest_index(struct listroot *root, char *variable)
-{
-	char name[BUFFER_SIZE], *arg;
+int search_nest_index(struct listroot *root, char *variable) {
+    char name[BUFFER_SIZE], *arg;
 
-	arg = get_arg_to_brackets(root->ses, variable, name);
+    arg = get_arg_to_brackets(root->ses, variable, name);
 
-	while (root && *arg)
-	{
-		root = search_nest_root(root, name);
+    while (root && *arg) {
+        root = search_nest_root(root, name);
 
-		if (root)
-		{
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-	if (root)
-	{
-		return search_index_list(root, name, NULL);
-	}
+    if (root) {
+        return search_index_list(root, name, NULL);
+    }
 
-	return -1;
+    return -1;
 }
 
-struct listroot *update_nest_root(struct listroot *root, char *arg)
-{
-	struct listnode *node;
+struct listroot *update_nest_root(struct listroot *root, char *arg) {
+    struct listnode *node;
 
-	node = search_node_list(root, arg);
+    node = search_node_list(root, arg);
 
-	if (node == NULL)
-	{
-		node = update_node_list(root, arg, "", "");
-	}
+    if (node == NULL) {
+        node = update_node_list(root, arg, "", "");
+    }
 
-	if (node->root == NULL)
-	{
-		node->root = init_list(root->ses, root->type, LIST_SIZE);
-	}
+    if (node->root == NULL) {
+        node->root = init_list(root->ses, root->type, LIST_SIZE);
+    }
 
-	return node->root;
+    return node->root;
 }
 
-void update_nest_node(struct listroot *root, char *arg)
-{
-	char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE];
+void update_nest_node(struct listroot *root, char *arg) {
+    char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE];
 
-	while (*arg)
-	{
-		arg = get_arg_in_braces(root->ses, arg, arg1, FALSE);
-		arg = get_arg_in_braces(root->ses, arg, arg2, FALSE);
+    while (*arg) {
+        arg = get_arg_in_braces(root->ses, arg, arg1, FALSE);
+        arg = get_arg_in_braces(root->ses, arg, arg2, FALSE);
 
-		if (*arg2 == DEFAULT_OPEN)
-		{
-			update_nest_node(update_nest_root(root, arg1), arg2);
-		}
-		else if (*arg1)
-		{
-			update_node_list(root, arg1, arg2, "");
-		}
+        if (*arg2 == DEFAULT_OPEN) {
+            update_nest_node(update_nest_root(root, arg1), arg2);
+        } else if (*arg1) {
+            update_node_list(root, arg1, arg2, "");
+        }
 
-		if (*arg == COMMAND_SEPARATOR)
-		{
-			arg++;
-		}
-	}
+        if (*arg == COMMAND_SEPARATOR) {
+            arg++;
+        }
+    }
 }
 
-int delete_nest_node(struct listroot *root, char *variable)
-{
-	char name[BUFFER_SIZE], *arg;
-	int index;
+int delete_nest_node(struct listroot *root, char *variable) {
+    char name[BUFFER_SIZE], *arg;
+    int index;
 
-	arg = get_arg_to_brackets(root->ses, variable, name);
+    arg = get_arg_to_brackets(root->ses, variable, name);
 
-	while (root && *arg)
-	{
-		root = search_nest_root(root, name);
+    while (root && *arg) {
+        root = search_nest_root(root, name);
 
-		if (root)
-		{
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-	if (root)
-	{
-		index = search_index_list(root, name, NULL);
+    if (root) {
+        index = search_index_list(root, name, NULL);
 
-		if (index != -1)
-		{
-			delete_index_list(root, index);
+        if (index != -1) {
+            delete_index_list(root, index);
 
-			return TRUE;
-		}
-	}
+            return TRUE;
+        }
+    }
 
-	return FALSE;
+    return FALSE;
 }
 
 // Return the number of indices of a node.
 
-int get_nest_size(struct listroot *root, char *variable, char **result)
-{
-	char name[BUFFER_SIZE], *arg;
-	int index, count;
+int get_nest_size(struct listroot *root, char *variable, char **result) {
+    char name[BUFFER_SIZE], *arg;
+    int index, count;
 
-	arg = get_arg_to_brackets(root->ses, variable, name);
+    arg = get_arg_to_brackets(root->ses, variable, name);
 
-	str_cpy(result, "");
+    str_cpy(result, "");
 
-	if (!strcmp(arg, "[]"))
-	{
-		if (*name == 0)
-		{
-			for (index = 0 ; index < root->used ; index++)
-			{
-				str_cat_printf(result, "{%s}", root->list[index]->left);
-			}
-			return root->used + 1;
-		}
+    if (!strcmp(arg, "[]")) {
+        if (*name == 0) {
+            for (index = 0 ; index < root->used ; index++) {
+                str_cat_printf(result, "{%s}", root->list[index]->left);
+            }
+            return root->used + 1;
+        }
 
-		if (search_nest_root(root, name) == NULL)
-		{
-			if (search_node_list(root, name))
-			{
-				return 1;
-			}
-		}
-	}
+        if (search_nest_root(root, name) == NULL) {
+            if (search_node_list(root, name)) {
+                return 1;
+            }
+        }
+    }
 
-	while (root && *name)
-	{
-		// Handle regex queries
+    while (root && *name) {
+        // Handle regex queries
 
-		if (search_nest_root(root, name) == NULL)
-		{
-			if (search_node_list(root, name) == NULL)
-			{
-				if (tintin_regexp_check(root->ses, name))
-				{
-					for (index = count = 0 ; index < root->used ; index++)
-					{
-						if (match(root->ses, root->list[index]->left, name, SUB_NONE))
-						{
-							show_nest_node(root->list[index], result, FALSE); // behaves like strcat
-							count++;
-						}
-					}
-					return count + 1;
-				}
-				else
-				{
-					return 0;
-				}
-			}
-		}
+        if (search_nest_root(root, name) == NULL) {
+            if (search_node_list(root, name) == NULL) {
+                if (tintin_regexp_check(root->ses, name)) {
+                    for (index = count = 0 ; index < root->used ; index++) {
+                        if (match(root->ses, root->list[index]->left, name, SUB_NONE)) {
+                            show_nest_node(root->list[index], result, FALSE); // behaves like strcat
+                            count++;
+                        }
+                    }
+                    return count + 1;
+                } else {
+                    return 0;
+                }
+            }
+        }
 
-		root = search_nest_root(root, name);
+        root = search_nest_root(root, name);
 
-		if (root)
-		{
-			if (!strcmp(arg, "[]"))
-			{
-				for (index = 0 ; index < root->used ; index++)
-				{
-					str_cat_printf(result, "{%s}", root->list[index]->left);
-				}
-				return root->used + 1;
-			}
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            if (!strcmp(arg, "[]")) {
+                for (index = 0 ; index < root->used ; index++) {
+                    str_cat_printf(result, "{%s}", root->list[index]->left);
+                }
+                return root->used + 1;
+            }
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 
-struct listnode *get_nest_node(struct listroot *root, char *variable, char **result, int def)
-{
-	struct listnode *node;
-	int size;
+struct listnode *get_nest_node(struct listroot *root, char *variable, char **result, int def) {
+    struct listnode *node;
+    int size;
 
-	size = get_nest_size(root, variable, result);
+    size = get_nest_size(root, variable, result);
 
-	if (size)
-	{
-		return NULL;
-	}
+    if (size) {
+        return NULL;
+    }
 
-	node = search_nest_node(root, variable);
+    node = search_nest_node(root, variable);
 
-	if (node)
-	{
-		show_nest_node(node, result, TRUE);
+    if (node) {
+        show_nest_node(node, result, TRUE);
 
-		return node;
-	}
+        return node;
+    }
 
-	node = search_base_node(root, variable);
+    node = search_base_node(root, variable);
 
-	if (node || def)
-	{
-		str_cpy(result, "");
-	}
-	else
-	{
-		str_cpy_printf(result, "$%s", variable);
-	}
-	return NULL;
+    if (node || def) {
+        str_cpy(result, "");
+    } else {
+        str_cpy_printf(result, "$%s", variable);
+    }
+    return NULL;
 }
 
-int get_nest_index(struct listroot *root, char *variable, char **result, int def)
-{
-	struct listnode *node;
-	int index, size;
+int get_nest_index(struct listroot *root, char *variable, char **result, int def) {
+    struct listnode *node;
+    int index, size;
 
-	size = get_nest_size(root, variable, result);
+    size = get_nest_size(root, variable, result);
 
-	if (size)
-	{
-		str_cpy_printf(result, "%d", size - 1);
+    if (size) {
+        str_cpy_printf(result, "%d", size - 1);
 
-		return -1;
-	}
+        return -1;
+    }
 
-	index = search_nest_index(root, variable);
+    index = search_nest_index(root, variable);
 
-	if (index >= 0)
-	{
-		str_cpy_printf(result, "%d", index + 1);
+    if (index >= 0) {
+        str_cpy_printf(result, "%d", index + 1);
 
-		return index;
-	}
+        return index;
+    }
 
-	node = search_base_node(root, variable);
+    node = search_base_node(root, variable);
 
-	if (node || def)
-	{
-		str_cpy(result, "0");
-	}
-	else
-	{
-		str_cpy_printf(result, "&%s", variable);
-	}
-	return -1;
+    if (node || def) {
+        str_cpy(result, "0");
+    } else {
+        str_cpy_printf(result, "&%s", variable);
+    }
+    return -1;
 }
 
 // cats to result when initialize is 0
 
-void show_nest_node(struct listnode *node, char **result, int initialize)
-{
-	if (initialize)
-	{
-		str_cpy(result, "");
-	}
+void show_nest_node(struct listnode *node, char **result, int initialize) {
+    if (initialize) {
+        str_cpy(result, "");
+    }
 
-	if (node->root == NULL)
-	{
-		if (initialize)
-		{
-			str_cat(result, node->right);
-		}
-		else
-		{
-			str_cat_printf(result, "{%s}", node->right);
-		}
-	}
-	else
-	{
-		struct listroot *root = node->root;
-		int i;
+    if (node->root == NULL) {
+        if (initialize) {
+            str_cat(result, node->right);
+        } else {
+            str_cat_printf(result, "{%s}", node->right);
+        }
+    } else {
+        struct listroot *root = node->root;
+        int i;
 
-		if (!initialize)
-		{
-			str_cat(result, "{");
-		}
+        if (!initialize) {
+            str_cat(result, "{");
+        }
 
-		for (i = 0 ; i < root->used ; i++)
-		{
-			str_cat_printf(result, "{%s}", root->list[i]->left);
+        for (i = 0 ; i < root->used ; i++) {
+            str_cat_printf(result, "{%s}", root->list[i]->left);
 
-			show_nest_node(root->list[i], result, FALSE);
-		}
+            show_nest_node(root->list[i], result, FALSE);
+        }
 
-		if (!initialize)
-		{
-			str_cat(result, "}");
-		}
-	}
+        if (!initialize) {
+            str_cat(result, "}");
+        }
+    }
 }
 
-struct listnode *set_nest_node(struct listroot *root, char *arg1, char *format, ...)
-{
-	struct listnode *node;
-	char *arg, *arg2, name[BUFFER_SIZE];
-	va_list args;
+struct listnode *set_nest_node(struct listroot *root, char *arg1, char *format, ...) {
+    struct listnode *node;
+    char *arg, *arg2, name[BUFFER_SIZE];
+    va_list args;
 
-	va_start(args, format);
-	vasprintf(&arg2, format, args);
-	va_end(args);
+    va_start(args, format);
+    vasprintf(&arg2, format, args);
+    va_end(args);
 
-	arg = get_arg_to_brackets(root->ses, arg1, name);
+    arg = get_arg_to_brackets(root->ses, arg1, name);
 
-	check_all_events(root->ses, SUB_ARG, 1, 2, "VARIABLE UPDATE %s", name, name, arg2);
+    check_all_events(root->ses, SUB_ARG, 1, 2, "VARIABLE UPDATE %s", name, name, arg2);
 
-	while (*arg)
-	{
-		root = update_nest_root(root, name);
+    while (*arg) {
+        root = update_nest_root(root, name);
 
-		if (root)
-		{
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-	node = search_node_list(root, name);
+    node = search_node_list(root, name);
 
-	if (node && node->root)
-	{
-		free_list(node->root);
+    if (node && node->root) {
+        free_list(node->root);
 
-		node->root = NULL;
-	}
+        node->root = NULL;
+    }
 
-	if (*space_out(arg2) == DEFAULT_OPEN)
-	{
-		update_nest_node(update_nest_root(root, name), arg2);
+    if (*space_out(arg2) == DEFAULT_OPEN) {
+        update_nest_node(update_nest_root(root, name), arg2);
 
-		node = search_node_list(root, name);
-	}
-	else
-	{
-		node = update_node_list(root, name, arg2, "");
-	}
-	free(arg2);
+        node = search_node_list(root, name);
+    } else {
+        node = update_node_list(root, name, arg2, "");
+    }
+    free(arg2);
 
-	return node;
+    return node;
 }
 
 // Like set, but don't erase old data.
 
-struct listnode *add_nest_node(struct listroot *root, char *arg1, char *format, ...)
-{
+struct listnode *add_nest_node(struct listroot *root, char *arg1, char *format, ...) {
 //	struct listnode *node;
-	char arg2[BUFFER_SIZE], name[BUFFER_SIZE], *arg;
-	va_list args;
+    char arg2[BUFFER_SIZE], name[BUFFER_SIZE], *arg;
+    va_list args;
 
-	va_start(args, format);
-	vsprintf(arg2, format, args);
-	va_end(args);
+    va_start(args, format);
+    vsprintf(arg2, format, args);
+    va_end(args);
 
-	arg = get_arg_to_brackets(root->ses, arg1, name);
+    arg = get_arg_to_brackets(root->ses, arg1, name);
 
-	while (*arg)
-	{
-		root = update_nest_root(root, name);
+    while (*arg) {
+        root = update_nest_root(root, name);
 
-		if (root)
-		{
-			arg = get_arg_in_brackets(root->ses, arg, name);
-		}
-	}
+        if (root) {
+            arg = get_arg_in_brackets(root->ses, arg, name);
+        }
+    }
 
-/*
-	Adding here, so don't clear the variable.
+    /*
+    	Adding here, so don't clear the variable.
 
-	node = search_node_list(root, name);
+    	node = search_node_list(root, name);
 
-	if (node && node->root)
-	{
-		free_list(node->root);
+    	if (node && node->root)
+    	{
+    		free_list(node->root);
 
-		node->root = NULL;
-	}
-*/
-	if (*space_out(arg2) == DEFAULT_OPEN)
-	{
-		update_nest_node(update_nest_root(root, name), arg2);
+    		node->root = NULL;
+    	}
+    */
+    if (*space_out(arg2) == DEFAULT_OPEN) {
+        update_nest_node(update_nest_root(root, name), arg2);
 
-		return search_node_list(root, name);
-	}
-	else
-	{
-		return update_node_list(root, name, arg2, "");
-	}
+        return search_node_list(root, name);
+    } else {
+        return update_node_list(root, name, arg2, "");
+    }
 }
 
 
-void copy_nest_node(struct listroot *dst_root, struct listnode *dst, struct listnode *src)
-{
-	int index;
+void copy_nest_node(struct listroot *dst_root, struct listnode *dst, struct listnode *src) {
+    int index;
 
-	if (src->root == NULL)
-	{
-		return;
-	}
+    if (src->root == NULL) {
+        return;
+    }
 
-	dst_root = dst->root = init_list(dst_root->ses, dst_root->type, src->root->size);
+    dst_root = dst->root = init_list(dst_root->ses, dst_root->type, src->root->size);
 
-	for (index = 0 ; index < src->root->used ; index++)
-	{
-		dst = insert_node_list(dst_root, src->root->list[index]->left, src->root->list[index]->right, src->root->list[index]->pr);
+    for (index = 0 ; index < src->root->used ; index++) {
+        dst = insert_node_list(dst_root, src->root->list[index]->left, src->root->list[index]->right, src->root->list[index]->pr);
 
-		if (src->root->list[index]->root)
-		{
-			copy_nest_node(dst_root, dst, src->root->list[index]);
-		}
-	}
+        if (src->root->list[index]->root) {
+            copy_nest_node(dst_root, dst, src->root->list[index]);
+        }
+    }
 }

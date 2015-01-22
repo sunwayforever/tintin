@@ -30,180 +30,150 @@
 #include "tintin.h"
 
 
-DO_COMMAND(do_highlight)
-{
-	char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE], temp[BUFFER_SIZE];
+DO_COMMAND(do_highlight) {
+    char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE], temp[BUFFER_SIZE];
 
-	arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_VAR|SUB_FUN);
-	arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_VAR|SUB_FUN);
-	arg = get_arg_in_braces(ses, arg, arg3, 1);
+    arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_VAR|SUB_FUN);
+    arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_VAR|SUB_FUN);
+    arg = get_arg_in_braces(ses, arg, arg3, 1);
 
-	if (*arg3 == 0)
-	{
-		strcpy(arg3, "5");
-	}
+    if (*arg3 == 0) {
+        strcpy(arg3, "5");
+    }
 
-	if (*arg1 == 0)
-	{
-		show_list(ses->list[LIST_HIGHLIGHT], 0);
-	}
-	else if (*arg1 && *arg2 == 0)
-	{
-		if (show_node_with_wild(ses, arg1, LIST_HIGHLIGHT) == FALSE)
-		{
-			show_message(ses, LIST_HIGHLIGHT, "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}.", arg1);
-		}
-	}
-	else
-	{
-		if (get_highlight_codes(ses, arg2, temp) == FALSE)
-		{
-			tintin_printf2(ses, "#HIGHLIGHT: VALID COLORS ARE:\n");
-			tintin_printf2(ses, "reset, bold, light, faint, dim, dark, underscore, blink, reverse, black, red, green, yellow, blue, magenta, cyan, white, b black, b red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, ebony, jade, lime, orange, pink, silver, tan, violet.");
-		}
-		else
-		{
-			update_node_list(ses->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
+    if (*arg1 == 0) {
+        show_list(ses->list[LIST_HIGHLIGHT], 0);
+    } else if (*arg1 && *arg2 == 0) {
+        if (show_node_with_wild(ses, arg1, LIST_HIGHLIGHT) == FALSE) {
+            show_message(ses, LIST_HIGHLIGHT, "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}.", arg1);
+        }
+    } else {
+        if (get_highlight_codes(ses, arg2, temp) == FALSE) {
+            tintin_printf2(ses, "#HIGHLIGHT: VALID COLORS ARE:\n");
+            tintin_printf2(ses, "reset, bold, light, faint, dim, dark, underscore, blink, reverse, black, red, green, yellow, blue, magenta, cyan, white, b black, b red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, ebony, jade, lime, orange, pink, silver, tan, violet.");
+        } else {
+            update_node_list(ses->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-			show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} @ {%s}.", arg1, arg2, arg3);
-		}
-	}
-	return ses;
+            show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} @ {%s}.", arg1, arg2, arg3);
+        }
+    }
+    return ses;
 }
 
 
-DO_COMMAND(do_unhighlight)
-{
-	delete_node_with_wild(ses, LIST_HIGHLIGHT, arg);
+DO_COMMAND(do_unhighlight) {
+    delete_node_with_wild(ses, LIST_HIGHLIGHT, arg);
 
-	return ses;
+    return ses;
 }
 
-void check_all_highlights(struct session *ses, char *original, char *line)
-{
-	struct listroot *root = ses->list[LIST_HIGHLIGHT];
-	struct listnode *node;
-	char *pto, *ptl, *ptm;
-	char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE];
-	int len;
+void check_all_highlights(struct session *ses, char *original, char *line) {
+    struct listroot *root = ses->list[LIST_HIGHLIGHT];
+    struct listnode *node;
+    char *pto, *ptl, *ptm;
+    char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE];
+    int len;
 
-	push_call("check_all_highlights(%p,%p,%p)",ses,original,line);
+    push_call("check_all_highlights(%p,%p,%p)",ses,original,line);
 
-	for (root->update = 0 ; root->update < root->used ; root->update++)
-	{
-		if (check_one_regexp(ses, root->list[root->update], line, original, 0))
-		{
-			node = root->list[root->update];
+    for (root->update = 0 ; root->update < root->used ; root->update++) {
+        if (check_one_regexp(ses, root->list[root->update], line, original, 0)) {
+            node = root->list[root->update];
 
-			get_highlight_codes(ses, node->right, color);
+            get_highlight_codes(ses, node->right, color);
 
-			*output = *reset = 0;
+            *output = *reset = 0;
 
-			pto = original;
-			ptl = line;
+            pto = original;
+            ptl = line;
 
-			do
-			{
-				if (*gtd->vars[0] == 0)
-				{
-					break;
-				}
+            do {
+                if (*gtd->vars[0] == 0) {
+                    break;
+                }
 
-				strcpy(match, gtd->vars[0]);
+                strcpy(match, gtd->vars[0]);
 
-				strip_vt102_codes(match, plain);
+                strip_vt102_codes(match, plain);
 
-				if (HAS_BIT(node->flags, NODE_FLAG_META))
-				{
-					ptm = strstr(pto, match);
+                if (HAS_BIT(node->flags, NODE_FLAG_META)) {
+                    ptm = strstr(pto, match);
 
-					len = strlen(match);
-				}
-				else
-				{
-					ptm = strip_vt102_strstr(pto, match, &len);
+                    len = strlen(match);
+                } else {
+                    ptm = strip_vt102_strstr(pto, match, &len);
 
-					ptl = strstr(ptl, match) + strlen(match);
-				}
+                    ptl = strstr(ptl, match) + strlen(match);
+                }
 
-				*ptm = 0;
+                *ptm = 0;
 
-				get_color_codes(reset, pto, reset);
+                get_color_codes(reset, pto, reset);
 
-				cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
+                cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
-				pto = ptm + len;
+                pto = ptm + len;
 
-				show_debug(ses, LIST_HIGHLIGHT, "#DEBUG HIGHLIGHT {%s}", node->left);
-			}
-			while (check_one_regexp(ses, node, ptl, pto, 0));
+                show_debug(ses, LIST_HIGHLIGHT, "#DEBUG HIGHLIGHT {%s}", node->left);
+            } while (check_one_regexp(ses, node, ptl, pto, 0));
 
-			strcat(output, pto);
+            strcat(output, pto);
 
-			strcpy(original, output);
-		}
-	}
-	pop_call();
-	return;
+            strcpy(original, output);
+        }
+    }
+    pop_call();
+    return;
 }
 
-int get_highlight_codes(struct session *ses, char *string, char *result)
-{
-	int cnt;
+int get_highlight_codes(struct session *ses, char *string, char *result) {
+    int cnt;
 
-	*result = 0;
+    *result = 0;
 
-	if (*string == '<')
-	{
-		substitute(ses, string, result, SUB_COL);
+    if (*string == '<') {
+        substitute(ses, string, result, SUB_COL);
 
-		return TRUE;
-	}
+        return TRUE;
+    }
 
-	if (*string == '\\')
-	{
-		substitute(ses, string, result, SUB_ESC);
+    if (*string == '\\') {
+        substitute(ses, string, result, SUB_ESC);
 
-		return TRUE;
-	}
+        return TRUE;
+    }
 
-	while (*string)
-	{
-		if (isalpha((int) *string))
-		{
-			for (cnt = 0 ; *color_table[cnt].name ; cnt++)
-			{
-				if (is_abbrev(color_table[cnt].name, string))
-				{
-					substitute(ses, color_table[cnt].code, result, SUB_COL);
+    while (*string) {
+        if (isalpha((int) *string)) {
+            for (cnt = 0 ; *color_table[cnt].name ; cnt++) {
+                if (is_abbrev(color_table[cnt].name, string)) {
+                    substitute(ses, color_table[cnt].code, result, SUB_COL);
 
-					result += strlen(result);
+                    result += strlen(result);
 
-					break;
-				}
-			}
+                    break;
+                }
+            }
 
-			if (*color_table[cnt].name == 0)
-			{
-				return FALSE;
-			}
+            if (*color_table[cnt].name == 0) {
+                return FALSE;
+            }
 
-			string += strlen(color_table[cnt].name);
-		}
+            string += strlen(color_table[cnt].name);
+        }
 
-		switch (*string)
-		{
-			case ' ':
-			case ',':
-				string++;
-				break;
+        switch (*string) {
+        case ' ':
+        case ',':
+            string++;
+            break;
 
-			case 0:
-				return TRUE;
+        case 0:
+            return TRUE;
 
-			default:
-				return FALSE;
-		}
-	}
-	return TRUE;
+        default:
+            return FALSE;
+        }
+    }
+    return TRUE;
 }

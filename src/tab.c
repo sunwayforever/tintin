@@ -29,29 +29,24 @@
 #include "tintin.h"
 
 
-DO_COMMAND(do_tab)
-{
-	char arg1[BUFFER_SIZE];
+DO_COMMAND(do_tab) {
+    char arg1[BUFFER_SIZE];
 
-	sub_arg_in_braces(ses, arg, arg1, 1, SUB_VAR|SUB_FUN);
+    sub_arg_in_braces(ses, arg, arg1, 1, SUB_VAR|SUB_FUN);
 
-	if (*arg1 == 0)
-	{
-		show_list(ses->list[LIST_TAB], 0);
-	}
-	else
-	{
-		update_node_list(ses->list[LIST_TAB], arg1, "", "0");
+    if (*arg1 == 0) {
+        show_list(ses->list[LIST_TAB], 0);
+    } else {
+        update_node_list(ses->list[LIST_TAB], arg1, "", "0");
 
-		show_message(ses, LIST_TAB, "#OK. {%s} IS NOW A TAB.", arg1);
-	}
-	return ses;
+        show_message(ses, LIST_TAB, "#OK. {%s} IS NOW A TAB.", arg1);
+    }
+    return ses;
 }
 
 
-DO_COMMAND(do_untab)
-{
-	delete_node_with_wild(ses, LIST_TAB, arg);
+DO_COMMAND(do_untab) {
+    delete_node_with_wild(ses, LIST_TAB, arg);
 
-	return ses;
+    return ses;
 }
