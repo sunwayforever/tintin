@@ -1,0 +1,4 @@
+*.o
+tt++
+config*
+Makefile
